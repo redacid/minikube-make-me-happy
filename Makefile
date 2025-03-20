@@ -4,10 +4,11 @@ SHELL := /bin/bash
 #DEBUG := --debug
 #VERBOSE := --verbose
 
-MINIKUBE_KUBERNETES_VERSION := 1.32.0
-MINIKUBE_NODES := 2
-MINIKUBE_MEMORY := 4G
-MINIKUBE_CPUS := 4
+MINIKUBE_KUBERNETES_VERSION ?= 1.32.0
+MINIKUBE_NODES ?= 1
+MINIKUBE_MEMORY ?= 4G
+MINIKUBE_CPUS ?= 4
+MINIKUBE_DOMAIN_NAMES ?= minikube local.domain
 
 # colors
 GREEN = $(shell tput -Txterm setaf 2)
@@ -44,45 +45,37 @@ destroy-minikube: @minikube-delete
 @minikube-delete-node:
 	minikube -p minikube-$(MINIKUBE_KUBERNETES_VERSION) node delete minikube-1.32.0-m02
 
+@ingress-dns-wait:
+	@until [ `kubectl get pods -n kube-system kube-ingress-dns-minikube -o jsonpath="{.status.phase}" 2>/dev/null || echo "None"` == "Running" ]; do echo "Waiting for ingerss DNS starts"; sleep 1; done
+
+@disable-resolved:
+	echo "Disable systemd-resolved..."
+	sudo systemctl stop systemd-resolved.service || exit 0;
+	sudo systemctl disable systemd-resolved.service || exit 0;
+
 .ONESHELL:
 @update-resolver:
-		@if `minikube -p minikube-$(MINIKUBE_KUBERNETES_VERSION) status > /dev/null`; then
-			echo "Disable resolved..."
-			sudo systemctl stop systemd-resolved.service || exit 0;
-			sudo systemctl disable systemd-resolved.service || exit 0;
-			sudo mkdir -p /etc/NetworkManager/dnsmasq.d/ || exit 0;
-			echo "Enable dnsmasq as NetworkManager extension..."
-			echo "server=/.minikube/$(shell kubectl get pod kube-ingress-dns-minikube --template '{{.status.podIP}}' -n kube-system || exit 1)" \
-			| sudo tee /etc/NetworkManager/dnsmasq.d/minikube.conf > /dev/null
-			printf "[main]\ndns=dnsmasq\n" | sudo tee /etc/NetworkManager/conf.d/dnsmasq.conf > /dev/null
-			sudo systemctl restart NetworkManager.service
-			echo "Update resolv.conf..."
-			sudo unlink /etc/resolv.conf || exit 0
-			sleep 3
-			echo "nameserver $(shell sudo netstat -tulnp | grep dnsmasq | awk '{printf "%s",$$4}' | cut -d ":" -f1 | head -n 1)" \
-			| sudo tee /etc/resolv.conf > /dev/null
-		@else
-			echo "MINIKUBE $(MINIKUBE_KUBERNETES_VERSION) NOT RUNNED!!"
-		@fi
+	@if `minikube -p minikube-$(MINIKUBE_KUBERNETES_VERSION) status > /dev/null`; then
+		make @disable-resolved
+		echo "Enable dnsmasq as NetworkManager extension..."
+		sudo mkdir -p /etc/NetworkManager/dnsmasq.d/ || exit 0;
+		make @ingress-dns-wait
 
-@update-resolver_old:
-		# This need for resolving names *.minikube, https://vw.minikube etc...
-		sudo systemctl stop systemd-resolved.service
-		sudo systemctl disable systemd-resolved.service
-		KUBE_DNS_IP=$(shell kubectl get pod kube-ingress-dns-minikube --template '{{.status.podIP}}' -n kube-system || exit 1)
-		#KUDE_DNS_IP=$(shell minikube -p minikube-$(MINIKUBE_KUBERNETES_VERSION) ip)
-		sudo mkdir -p /etc/NetworkManager/dnsmasq.d/
-		echo "server=/.minikube/$KUBE_DNS_IP" | sudo tee /etc/NetworkManager/dnsmasq.d/minikube.conf > /dev/null
-		# edit /etc/NetworkManager/NetworkManager.conf
-		# add dns=dnsmasq in [main] section
-		# edit /etc/resolv.conf
-		# change resolver to 127.0.1.1
+		@$(foreach domain,$(MINIKUBE_DOMAIN_NAMES), echo "======= Add domain $(domain) to dnsmasq =======" \
+		&& echo "server=/.$(domain)/$(shell kubectl get pod kube-ingress-dns-minikube --template '{{.status.podIP}}' -n kube-system || exit 1)" \
+		| sudo tee /etc/NetworkManager/dnsmasq.d/$(domain).conf > /dev/null || exit;)
+
 		printf "[main]\ndns=dnsmasq\n" | sudo tee /etc/NetworkManager/conf.d/dnsmasq.conf > /dev/null
 		sudo systemctl restart NetworkManager.service
+		echo "Update resolv.conf..."
 		sudo unlink /etc/resolv.conf || exit 0
 		sleep 3
-		DNSMASQ_LISTEN_ADDR=$(shell sudo netstat -tulnp | grep dnsmasq | awk '{printf("%s",$4)}' | cut -d ":" -f1 | head -n 1)
-		echo "nameserver $DNSMASQ_LISTEN_ADDR" | sudo tee /etc/resolv.conf > /dev/null
+		echo "Add nameserver(dnsmasq) to resolv.conf"
+		echo "nameserver $(shell sudo netstat -tulnp | grep dnsmasq | awk '{printf "%s",$$4}' | cut -d ":" -f1 | head -n 1)" \
+		| sudo tee /etc/resolv.conf > /dev/null
+	@else
+		echo "MINIKUBE $(MINIKUBE_KUBERNETES_VERSION) NOT STARTED!!"
+	@fi
 
 @minikube-start:
 	minikube start -p minikube-$(MINIKUBE_KUBERNETES_VERSION)
