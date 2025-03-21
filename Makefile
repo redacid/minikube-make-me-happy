@@ -24,11 +24,19 @@ TARGET_MAX_CHAR_NUM = 30
 
 all: help
 
+## First start minikube cluster
+minikube-deploy: @minikube-first-start @minikube-enable-addons @update-resolver
+
 ## Start minikube cluster
-deploy-minikube: @minikube-first-start @minikube-enable-addons @update-resolver
+minikube-start:
+	minikube start -p $(MINIKUBE_CONTEXT)
+
+## Stop minikube cluster
+minikube-stop:
+	minikube stop -p $(MINIKUBE_CONTEXT)
 
 ## Destroy minikube cluster
-destroy-minikube: @minikube-delete
+minikube-destroy: @minikube-delete
 
 minikube-add-node:
 	minikube -p $(MINIKUBE_CONTEXT) node add
@@ -121,13 +129,7 @@ install-minikube:
 		echo "MINIKUBE $(MINIKUBE_CONTEXT) NOT STARTED!!"
 	@fi
 
-@minikube-start:
-	minikube start -p $(MINIKUBE_CONTEXT)
-
-@minikube-stop:
-	minikube stop -p $(MINIKUBE_CONTEXT)
-
-@minikube-delete: @minikube-stop
+@minikube-delete: minikube-stop
 	minikube delete -p $(MINIKUBE_CONTEXT)
 
 @list-addons:
