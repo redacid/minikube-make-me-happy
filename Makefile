@@ -27,7 +27,7 @@ all: help
 ## First start minikube cluster
 minikube-deploy: @minikube-first-start @minikube-enable-addons @update-resolver
 
-## Start minikube cluster
+## Start stopped minikube cluster
 minikube-start:
 	minikube start -p $(MINIKUBE_CONTEXT)
 
