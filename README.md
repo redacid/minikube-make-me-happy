@@ -2,7 +2,7 @@
 [Project URL](https://gitlab.prozorro.sale/serhii.rudenko/minikube)
 
 ### Requrements
-    Before run need install minikebe and kubectl
+    Before run need install minikube and kubectl
 
 ```sh
 make install-kubectl
