@@ -11,6 +11,7 @@ MINIKUBE_CPUS ?= 4
 MINIKUBE_DOMAIN_NAMES ?= minikube local.domain
 MINIKUBE_CONTEXT := minikube-$(MINIKUBE_KUBERNETES_VERSION)
 MINIKUBE_SA_NAME := redacid
+MINIKUBE_SA_TOKEN_DURATION := 8760h
 
 # colors
 GREEN = $(shell tput -Txterm setaf 2)
@@ -48,7 +49,7 @@ create-service-account:
 	make @check_current_context
 	kubectl create serviceaccount $(MINIKUBE_SA_NAME) -n kube-system
 	kubectl create clusterrolebinding $(MINIKUBE_SA_NAME)-cluster-admin-crb  --clusterrole=cluster-admin --serviceaccount=kube-system:$(MINIKUBE_SA_NAME)
-	kubectl create token $(MINIKUBE_SA_NAME) -n kube-system > sa-token.txt
+	kubectl create token $(MINIKUBE_SA_NAME) --duration=$(MINIKUBE_SA_TOKEN_DURATION) -n kube-system > sa-token.txt
 
 curl-api:
 	make @check_current_context
