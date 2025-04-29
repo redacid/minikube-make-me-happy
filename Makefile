@@ -5,8 +5,8 @@ SHELL := /bin/bash
 #VERBOSE := --verbose
 
 MINIKUBE_KUBERNETES_VERSION ?= 1.32.0
-MINIKUBE_NODES ?= 2
-MINIKUBE_MEMORY ?= 2G
+MINIKUBE_NODES ?= 1
+MINIKUBE_MEMORY ?= 4G
 MINIKUBE_CPUS ?= 4
 MINIKUBE_DOMAIN_NAMES ?= minikube local.domain
 MINIKUBE_CONTEXT := minikube-$(MINIKUBE_KUBERNETES_VERSION)
@@ -122,9 +122,9 @@ install-minikube:
 		sudo systemctl restart NetworkManager.service
 		echo "Update resolv.conf..."
 		sudo unlink /etc/resolv.conf || exit 0
-		sleep 3
+		sleep 5
 		echo "Add nameserver(dnsmasq) to resolv.conf"
-		echo "nameserver $(shell sudo netstat -tulnp | grep dnsmasq | awk '{printf "%s",$$4}' | cut -d ":" -f1 | head -n 1)" \
+		echo "nameserver $(shell sudo netstat -tlnp | grep dnsmasq | awk '{printf "%s",$$4}' | cut -d ":" -f1 | head -n 1)" \
 		| sudo tee /etc/resolv.conf > /dev/null
 	@else
 		echo "MINIKUBE $(MINIKUBE_CONTEXT) NOT STARTED!!"
