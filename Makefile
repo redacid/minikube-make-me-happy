@@ -25,8 +25,15 @@ TARGET_MAX_CHAR_NUM = 30
 
 all: help
 
+## Minikube version
+minikube-version:
+	minikube version
+
 ## First start minikube cluster
 minikube-deploy: @minikube-first-start @minikube-enable-addons @update-resolver
+
+## Destroy minikube cluster
+minikube-destroy: @minikube-delete
 
 ## Start stopped minikube cluster
 minikube-start:
@@ -35,9 +42,6 @@ minikube-start:
 ## Stop minikube cluster
 minikube-stop:
 	minikube stop -p $(MINIKUBE_CONTEXT)
-
-## Destroy minikube cluster
-minikube-destroy: @minikube-delete
 
 minikube-add-node:
 	minikube -p $(MINIKUBE_CONTEXT) node add
