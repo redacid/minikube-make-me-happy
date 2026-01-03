@@ -8,9 +8,10 @@ MINIKUBE_KUBERNETES_VERSION ?= 1.33.0
 MINIKUBE_NODES ?= 1
 MINIKUBE_MEMORY ?= 4G
 MINIKUBE_CPUS ?= 4
-MINIKUBE_CONTEXT := minikube-$(MINIKUBE_KUBERNETES_VERSION)
+MINIKUBE_CONTEXT := minikube-cluster
 MINIKUBE_SA_NAME := redacid
 MINIKUBE_SA_TOKEN_DURATION := 87600h
+MINIKUBE_API_SERVER := --apiserver-ips=127.0.0.1,$(EXTERNAL_SERVER_IP) --listen-address=0.0.0.0 --apiserver-port=8443
 
 # colors
 GREEN = $(shell tput -Txterm setaf 2)
@@ -24,7 +25,6 @@ TARGET_MAX_CHAR_NUM = 30
 
 all: help
 
-
 ## Minikube version
 minikube-version:
 	minikube version
@@ -37,7 +37,7 @@ minikube-destroy: @minikube-delete
 
 ## Start stopped minikube cluster
 minikube-start:
-	minikube start -p $(MINIKUBE_CONTEXT)
+	minikube start $(MINIKUBE_API_SERVER) -p $(MINIKUBE_CONTEXT)
 
 ## Stop minikube cluster
 minikube-stop:
@@ -81,7 +81,7 @@ install-minikube:
 	kubectl apply -f minikube-ingress-dns.yaml
 
 @minikube-first-start:
-	minikube start -p $(MINIKUBE_CONTEXT) \
+	minikube start $(MINIKUBE_API_SERVER) -p $(MINIKUBE_CONTEXT) \
 		--nodes=$(MINIKUBE_NODES) \
 		--memory=$(MINIKUBE_MEMORY) \
 		--cpus=$(MINIKUBE_CPUS) \
