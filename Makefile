@@ -62,13 +62,13 @@ curl-api:
 
 ## Install kubectl
 install-kubectl:
-	sudo curl -L "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl --output /usr/bin/kubectl"
-	sudo chmod +x /usr/bin/kubectl
+	sudo curl -L "https://dl.k8s.io/release/$(shell curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl --output /usr/local/bin/kubectl"
+	sudo chmod +x /usr/local/bin/kubectl
 
 ## Install minikube binary
 install-minikube:
-	sudo curl -L https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 --output /usr/bin/minikube
-	sudo chmod +x /usr/bin/minikube
+	sudo curl -L https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 --output /usr/local/bin/minikube
+	sudo chmod +x /usr/local/bin/minikube
 
 #### DON'T TOUCH BOTTOM TARGETS, USE ONLY AHEAD )))
 
