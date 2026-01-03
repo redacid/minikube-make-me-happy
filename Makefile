@@ -62,7 +62,7 @@ curl-api:
 
 ## Install kubectl
 install-kubectl:
-	sudo curl -L "https://dl.k8s.io/release/$(shell curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl --output /usr/local/bin/kubectl"
+	sudo curl -L "https://dl.k8s.io/release/$(shell curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" --output /usr/local/bin/kubectl
 	sudo chmod +x /usr/local/bin/kubectl
 
 ## Install minikube binary
