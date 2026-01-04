@@ -89,7 +89,7 @@ install-minikube:
 		--cni calico
 
 @minikube-enable-addons:
-	minikube -p $(MINIKUBE_CONTEXT) addons enable ingress
+	#minikube -p $(MINIKUBE_CONTEXT) addons enable ingress
 	make @check_current_context
 	make @deploy-patched-ingress-dns
 	#minikube -p $(MINIKUBE_CONTEXT) addons enable ingress-dns
