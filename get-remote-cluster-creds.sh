@@ -21,6 +21,7 @@ cp ${DST_DIR}/.kube/config ${DST_DIR}/.kube/backup/config.backup-${CURRENT_DATE}
 KUBECONFIG=${DST_DIR}/.kube/config:${CFG_DIR}/${MINIKUBE_CONFIG} kubectl config view --flatten > ${CFG_DIR}/config-merged
 
 mv ${CFG_DIR}/config-merged ${DST_DIR}/.kube/config
+chmod 600 ${DST_DIR}/.kube/config
 
 echo "-------------------------------------------------------------------"
 
