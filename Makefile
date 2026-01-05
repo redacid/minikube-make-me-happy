@@ -100,6 +100,10 @@ install-minikube:
 	minikube -p $(MINIKUBE_CONTEXT) addons enable storage-provisioner
 	minikube -p $(MINIKUBE_CONTEXT) ip
 
+create-retain-sc: @check_current_context
+	kubectl patch storageclass standard -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"false"}}}'
+	kubectl apply -f ./storage-classes-retain.yaml
+
 @check_current_context:
 	@until [ `kubectl config current-context 2>/dev/null || echo "None"` == "$(MINIKUBE_CONTEXT)" ]; do echo "Current context not $(MINIKUBE_CONTEXT)"; sleep 1; done
 
