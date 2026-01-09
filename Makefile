@@ -3,7 +3,7 @@ export
 SHELL := /bin/bash
 #DEBUG := --debug
 #VERBOSE := --verbose
-
+YQ_PIPE = $(shell command -v yq 2>/dev/null | xargs -I {} sh -c '[ -x "{}" ] 2>/dev/null && echo "| {} "' )
 MINIKUBE_KUBERNETES_VERSION ?= 1.33.0
 MINIKUBE_NODES ?= 1
 MINIKUBE_MEMORY ?= 4G
@@ -24,6 +24,9 @@ TARGET_MAX_CHAR_NUM = 30
 .EXPORT_ALL_VARIABLES:
 
 all: help
+
+test_yq:
+	cat minikube-ingress-dns.yaml $(YQ_PIPE)
 
 ## Minikube version
 minikube-version:
